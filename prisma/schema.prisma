@@ -1,0 +1,285 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+  MODERATOR
+  VIEWER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  role          UserRole  @default(ADMIN)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  adminLogs     AdminLog[]
+}
+
+model Slider {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  image       String?
+  link        String?
+  linkTitle   String?
+  hasLink     Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Partner {
+  id        String   @id @default(cuid())
+  name      String
+  logo      String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AboutStats {
+  id        String   @id @default(cuid())
+  title     String
+  value     String
+  icon      String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model EventCategory {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  slug        String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  events      Event[]
+  formFields  FormField[]
+}
+
+model Event {
+  id                  String           @id @default(cuid())
+  title               String
+  description         String           @db.Text
+  eventDate           DateTime?
+  location            String?
+  eventType           String?
+  participantLimit    Int?
+  applicationDeadline DateTime?
+  categoryId          String?
+  category            EventCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  acceptsApplications Boolean          @default(false)
+  isPastEvent         Boolean          @default(false)
+  driveLink           String?
+  details             String?          @db.Text
+  showOnHomepage      Boolean          @default(false)
+  order               Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  images              EventImage[]
+  applications        EventApplication[]
+}
+
+model EventImage {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model FormField {
+  id            String         @id @default(cuid())
+  eventCategoryId String?
+  eventCategory   EventCategory? @relation(fields: [eventCategoryId], references: [id], onDelete: Cascade)
+  fieldType     String         // text, email, number, date, select, checkbox, textarea
+  label         String
+  placeholder   String?
+  isRequired    Boolean        @default(false)
+  helpText      String?        // Opsiyonel alanlar için açıklama metni (örn: "Varsa belirtiniz", "Opsiyonel")
+  options       Json?          // For select fields
+  order         Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model EventApplication {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  formData  Json     // Dynamic form data
+  status    String   @default("pending") // pending, approved, rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  image       String?
+  link        String?
+  linkTitle   String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  publishedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Settings {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  type      String   // footer, contact, general
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NewsletterSubscription {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  subscribedAt DateTime @default(now())
+  isActive    Boolean  @default(true)
+}
+
+model ContactFormSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model MemberApplication {
+  id                String   @id @default(cuid())
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  dateOfBirth       DateTime?
+  address           String?
+  city              String?
+  country           String?
+  occupation        String?
+  company           String?
+  experience        String?  @db.Text
+  portfolio         String?
+  linkedin          String?
+  github            String?
+  website           String?
+  motivation        String?  @db.Text
+  expectations      String?  @db.Text
+  gameDevelopmentExperience String? @db.Text
+  preferredRole     String?
+  skills            String?  @db.Text
+  additionalInfo    Json?    // For any additional dynamic fields
+  status            String   @default("pending") // pending, approved, rejected
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model OrganCategory {
+  id          String        @id @default(cuid())
+  name        String
+  description String?       @db.Text
+  order       Int           @default(0)
+  isActive    Boolean       @default(true)
+  members     OrganMember[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model OrganMember {
+  id          String        @id @default(cuid())
+  categoryId  String
+  category    OrganCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  firstName   String
+  lastName    String
+  department  String?       // Bölüm
+  role        String?       // Rol
+  imageUrl    String?       // Fotoğraf URL'i
+  order       Int           @default(0)
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model AdminLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action      String   // CREATE, UPDATE, DELETE, LOGIN, LOGOUT, SETTINGS_CHANGE
+  entityType  String   // Event, Announcement, User, Settings, Slider, Partner, vb.
+  entityId    String?  // İlgili entity'nin ID'si
+  entityName  String?  // Entity'nin adı/title'ı
+  changes     Json?    // Değişiklik detayları - eski/yeni değerler
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?    // Ek bilgiler
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  eventType   String   // PAGE_VIEW, CLICK, FORM_SUBMIT, DOWNLOAD, vb.
+  page        String   // Sayfa path'i
+  referrer    String?  // Önceden geldiği sayfa
+  userAgent   String?  // Browser bilgisi
+  ipAddress   String?  // Anonimleştirilmiş IP
+  deviceType  String?  // desktop, mobile, tablet
+  browser     String?
+  os          String?
+  country     String?  // IP'den türetilen
+  sessionId   String?  // Oturum takibi için
+  userId      String?  // Eğer login olmuşsa
+  metadata    Json?    // Ek veriler - form data, button text, vb.
+  duration    Int?     // Sayfa görüntüleme süresi - saniye
+  createdAt   DateTime @default(now())
+
+  @@index([eventType])
+  @@index([page])
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+model AnalyticsSession {
+  id          String   @id @default(cuid())
+  sessionId   String   @unique
+  startedAt   DateTime @default(now())
+  endedAt     DateTime?
+  pageViews   Int      @default(0)
+  duration    Int      @default(0) // Saniye
+  deviceType  String?
+  country     String?
+  browser     String?
+  os          String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sessionId])
+  @@index([startedAt])
+}
+
