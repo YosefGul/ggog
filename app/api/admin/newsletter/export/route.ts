@@ -22,16 +22,16 @@ export async function GET(request: NextRequest) {
     const headerStyle = {
       font: { bold: true, color: { argb: "FFFFFFFF" } },
       fill: {
-        type: "pattern",
-        pattern: "solid",
+        type: "pattern" as const,
+        pattern: "solid" as const,
         fgColor: { argb: "FF2563EB" },
       },
-      alignment: { horizontal: "center", vertical: "middle" },
+      alignment: { horizontal: "center" as const, vertical: "middle" as const },
       border: {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
+        top: { style: "thin" as const },
+        left: { style: "thin" as const },
+        bottom: { style: "thin" as const },
+        right: { style: "thin" as const },
       },
     };
 
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return handleError(error, "Failed to export newsletter subscriptions");
+    return handleError(error);
   }
 }
 

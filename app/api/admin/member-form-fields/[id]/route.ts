@@ -29,7 +29,7 @@ export async function GET(
 
     return NextResponse.json(field);
   } catch (error) {
-    return handleError(error, "Failed to fetch member form field");
+    return handleError(error);
   }
 }
 
@@ -74,7 +74,7 @@ export async function PUT(
 
     return NextResponse.json(field);
   } catch (error) {
-    return handleError(error, "Failed to update member form field");
+    return handleError(error);
   }
 }
 
@@ -107,7 +107,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleError(error, "Failed to delete member form field");
+    return handleError(error);
   }
 }
 

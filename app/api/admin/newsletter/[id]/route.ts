@@ -20,7 +20,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    return handleError(error, "Failed to delete newsletter subscription");
+    return handleError(error);
   }
 }
 
@@ -45,7 +45,7 @@ export async function PUT(
 
     return NextResponse.json(subscription);
   } catch (error) {
-    return handleError(error, "Failed to update newsletter subscription");
+    return handleError(error);
   }
 }
 

@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return handleError(error, "Failed to fetch newsletter subscriptions");
+    return handleError(error);
   }
 }
 

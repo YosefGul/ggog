@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(fields);
   } catch (error) {
-    return handleError(error, "Failed to fetch member form fields");
+    return handleError(error);
   }
 }
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(field);
   } catch (error) {
-    return handleError(error, "Failed to create member form field");
+    return handleError(error);
   }
 }
 
