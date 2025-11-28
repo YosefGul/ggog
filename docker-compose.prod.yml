@@ -55,9 +55,9 @@ services:
     environment:
       DATABASE_URL: "postgresql://ggog_user:ggog_password@postgres:5432/ggog_db?schema=public"
       REDIS_URL: "redis://redis:6379"
-      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://alanadiniz.com}"
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://ggogd.org}"
       NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://alanadiniz.com}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://ggogd.org}"
       NEXT_PUBLIC_TINYMCE_API_KEY: "${NEXT_PUBLIC_TINYMCE_API_KEY}"
       NODE_ENV: "production"
     volumes:

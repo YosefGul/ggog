@@ -56,9 +56,9 @@ services:
       REDIS_URL: "redis://redis:6379"
       
       # Diğer Next.js/Auth değişkenlerini buraya ekleyin:
-      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://alanadiniz.com}" # Gerçek alan adınız
+      NEXT_PUBLIC_APP_URL: "${NEXT_PUBLIC_APP_URL:-https://ggogd.org}"
       NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-4NoiYOTufcXTZED8rizB8iUOkzJlZrBE62UJp8kttO2gzaGoHWKnAdKO5tM=Sşt}"
-      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}" # Container içindeki adres
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-https://ggogd.org}"
       NEXT_PUBLIC_TINYMCE_API_KEY: "${NEXT_PUBLIC_TINYMCE_API_KEY:-g9vuwetv1ta1u4jenq9dva7ch9sbuihz49twofoah8h6ilg0}"
       
       # Node environment
