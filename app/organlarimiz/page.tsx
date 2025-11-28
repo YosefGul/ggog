@@ -1,7 +1,17 @@
+import { Metadata } from "next";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { generateMetadata as generateSEOMetadata } from "@/lib/seo";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
+
+export const metadata: Metadata = generateSEOMetadata({
+  title: "Organlarımız",
+  description: "GGOG Derneği yönetim organları ve üyeleri. Derneğimizin yönetim yapısı ve organları hakkında bilgi.",
+  url: "/organlarimiz",
+});
 
 export default async function OrgansPage() {
   const categories = await prisma.organCategory.findMany({
@@ -17,9 +27,14 @@ export default async function OrgansPage() {
     orderBy: { order: "asc" },
   });
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Organlarımız", href: "/organlarimiz" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={breadcrumbItems} className="mb-8" />
         <AnimateOnScroll>
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold mb-4">Organlarımız</h1>
@@ -60,10 +75,12 @@ export default async function OrgansPage() {
                         {/* Photo Section */}
                         <div className="relative w-full h-64 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center overflow-hidden">
                           {member.imageUrl ? (
-                            <img
+                            <Image
                               src={member.imageUrl}
                               alt={`${member.firstName} ${member.lastName}`}
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                             />
                           ) : (
                             <div className="flex flex-col items-center justify-center text-center p-6">

@@ -1,24 +1,22 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
 import { Permission, hasPermission } from "@/lib/permissions";
+import { UnauthorizedError, ForbiddenError } from "@/lib/error-handler";
 
 /**
  * Check if user has permission to access an API route
- * Returns null if authorized, otherwise returns error response
+ * Returns null if authorized, otherwise throws error
  */
 export async function checkPermission(
   permission: Permission
-): Promise<NextResponse | null> {
+): Promise<void> {
   const user = await getCurrentUser();
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    throw new UnauthorizedError();
   }
 
-  const userRole = (user as any).role || "VIEWER";
-  if (!hasPermission(userRole, permission)) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  if (!hasPermission(user.role, permission)) {
+    throw new ForbiddenError();
   }
-
-  return null;
 }
 

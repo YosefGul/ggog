@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -49,10 +50,12 @@ export default function EventsSection() {
             <Card key={event.id} className="overflow-hidden hover:shadow-xl transition-shadow">
               {event.images.length > 0 && (
                 <div className="relative h-48">
-                  <img
+                  <Image
                     src={event.images[0].imageUrl}
                     alt={event.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 </div>
               )}

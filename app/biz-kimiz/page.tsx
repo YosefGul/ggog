@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import RichTextRenderer from "@/components/RichTextRenderer";
 import ImageSlider from "@/components/ImageSlider";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
 
 interface Stat {
   id: string;
@@ -61,9 +62,14 @@ export default function AboutPage() {
     }
   };
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Biz Kimiz?", href: "/biz-kimiz" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={breadcrumbItems} className="mb-8" />
         <AnimateOnScroll>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">

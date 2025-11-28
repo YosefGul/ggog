@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import RichTextRenderer from "@/components/RichTextRenderer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Calendar, ArrowLeft } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { Skeleton } from "@/components/ui/skeleton";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
+import StructuredData from "@/components/seo/StructuredData";
+import { generateArticleSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 
 interface Announcement {
   id: string;
@@ -50,8 +55,22 @@ export default function AnnouncementDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Yükleniyor...</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto">
+            <Skeleton className="h-10 w-32 mb-6" />
+            <Card>
+              <Skeleton className="h-96 w-full rounded-t-lg" />
+              <CardHeader>
+                <Skeleton className="h-8 w-3/4 mb-2" />
+                <Skeleton className="h-4 w-1/3" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-2/3" />
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -76,18 +95,37 @@ export default function AnnouncementDetailPage() {
     );
   }
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Duyurular", href: "/duyurular" },
+    { label: announcement.title, href: `/duyurular/${id}` },
+  ];
+
+  const articleSchema = generateArticleSchema({
+    headline: announcement.title,
+    description: announcement.description.substring(0, 200),
+    image: announcement.image,
+    datePublished: announcement.publishedAt,
+    publisher: {
+      name: "GGOG - Genç Girişimciler ve Oyun Geliştiricileri Derneği",
+    },
+    url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/duyurular/${id}`,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Ana Sayfa", url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}` },
+    { name: "Duyurular", url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/duyurular` },
+    { name: announcement.title, url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/duyurular/${id}` },
+  ]);
+
   return (
-    <div className="container mx-auto px-4 py-16">
+    <>
+      <StructuredData data={[articleSchema, breadcrumbSchema]} />
+      <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
         <div className="max-w-4xl mx-auto">
           <AnimateOnScroll>
             <div className="mb-6">
-              <Button asChild variant="ghost">
-                <Link href="/duyurular" className="flex items-center gap-2">
-                  <ArrowLeft className="w-4 h-4" />
-                  Duyurulara Dön
-                </Link>
-              </Button>
+              <Breadcrumb items={breadcrumbItems} />
             </div>
           </AnimateOnScroll>
 
@@ -95,10 +133,13 @@ export default function AnnouncementDetailPage() {
             <Card>
           {announcement.image && (
             <div className="relative h-96 w-full overflow-hidden rounded-t-lg">
-              <img
+              <Image
                 src={announcement.image}
                 alt={announcement.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                priority
               />
             </div>
           )}
@@ -132,7 +173,8 @@ export default function AnnouncementDetailPage() {
           </AnimateOnScroll>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

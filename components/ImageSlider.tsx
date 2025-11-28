@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -50,10 +51,13 @@ export default function ImageSlider({
     <div className="relative w-full h-full">
       {/* Main Image */}
       <div className="relative w-full h-full rounded-lg overflow-hidden bg-muted">
-        <img
+        <Image
           src={images[currentIndex].imageUrl}
           alt={`${title} - ${currentIndex + 1}`}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+          priority={currentIndex === 0}
         />
 
         {/* Navigation Arrows */}

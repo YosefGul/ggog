@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import RichTextRenderer from "./RichTextRenderer";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -92,10 +93,13 @@ export default function HeroSlider() {
           {currentSlider.image && (
             <div className="hidden md:block relative">
               <div className="relative h-96 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/20">
-                <img
+                <Image
                   src={currentSlider.image}
                   alt={currentSlider.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 0px, 50vw"
+                  priority={currentIndex === 0}
                 />
               </div>
             </div>

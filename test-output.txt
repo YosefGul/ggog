@@ -1,0 +1,119 @@
+
+> ggog@1.0.0 test
+> tsx scripts/run-all-tests.ts
+
+🚀 Running All Tests
+
+==================================================
+
+📋 Running: Environment Variables Validation
+--------------------------------------------------
+🧪 Test 1: Environment Variables Validation
+
+✅ Test 1.1: Missing DATABASE_URL: Correctly failed with: Required
+✅ Test 1.2: Invalid DATABASE_URL format: Correctly failed with: DATABASE_URL must be a valid URL
+✅ Test 1.3: Missing NEXTAUTH_SECRET: Correctly failed with: Required
+✅ Test 1.4: Short NEXTAUTH_SECRET (< 32 chars): Correctly failed with: NEXTAUTH_SECRET must be at least 32 characters
+✅ Test 1.5: Valid environment variables: Passed
+
+📊 Results: 5 passed, 0 failed
+
+📋 Running: File Upload Security
+--------------------------------------------------
+🧪 Test 2: File Upload Security
+
+Test 2.1: Valid image file signatures
+✅ Test 2.1: Passed
+
+Test 2.2: MIME type spoofing detection
+✅ Test 2.2: Correctly detected spoofed MIME type
+
+Test 2.3: Filename sanitization
+✅ Test 2.3: All filenames sanitized correctly
+   Examples: etcpasswd, file_script_.jpg, file_with_spaces.jpg
+
+Test 2.4: File extension extraction
+✅ Test 2.4: File extension extraction works correctly
+
+Test 2.5: Allowed MIME types
+✅ Test 2.5: Allowed MIME types are correct
+
+📊 Results: 5 passed, 0 failed
+
+📋 Running: Password Policy
+--------------------------------------------------
+🧪 Test 5: Password Policy
+
+✅ Test 5.1: Minimum 8 characters: Passed (Too short)
+   Errors: Password must be at least 8 characters
+✅ Test 5.2: Missing uppercase: Passed (No uppercase letter)
+   Errors: Password must contain at least one uppercase letter
+✅ Test 5.3: Missing lowercase: Passed (No lowercase letter)
+   Errors: Password must contain at least one lowercase letter
+✅ Test 5.4: Missing number: Passed (No number)
+   Errors: Password must contain at least one number
+✅ Test 5.5: Missing special character: Passed (No special character)
+   Errors: Password must contain at least one special character
+✅ Test 5.6: Valid password: Passed (Meets all requirements)
+✅ Test 5.7: Strong password: Passed (Strong password)
+
+📊 Results: 7 passed, 0 failed
+
+📋 Running: XSS Protection
+--------------------------------------------------
+🧪 Test 6: XSS Protection
+
+✅ Test 6.1: Script tag removal: Passed
+✅ Test 6.2: Event handler removal: Passed
+✅ Test 6.3: JavaScript protocol removal: Passed
+✅ Test 6.4: iframe removal: Passed
+✅ Test 6.5: Safe HTML preservation: Passed
+
+Test 6.6: Dangerous HTML detection
+✅ Test 6.6: Dangerous HTML detection works correctly
+
+📊 Results: 6 passed, 0 failed
+
+📋 Running: Input Validation
+--------------------------------------------------
+🧪 Test 4: Input Validation
+
+Test 4.1: Email validation
+✅ Test 4.1: Email validation works correctly
+
+Test 4.2: Contact form validation
+✅ Test 4.2: Contact form validation works correctly
+
+Test 4.3: Member application validation
+✅ Test 4.3: Member application validation works correctly
+
+Test 4.4: User creation validation
+✅ Test 4.4: User creation validation works correctly
+
+📊 Results: 4 passed, 0 failed
+
+📋 Running: Date Utilities
+--------------------------------------------------
+🧪 Test 12: Date Utility Functions
+
+Test 12.1: Date formatting
+✅ Test 12.1: Passed - Formatted: 15 Ocak 2024
+
+Test 12.2: Invalid date handling
+✅ Test 12.2: Invalid dates handled correctly
+
+Test 12.3: Past date detection
+✅ Test 12.3: Past/future date detection works correctly
+
+Test 12.4: ISO string conversion
+✅ Test 12.4: ISO conversion works correctly - 2024-01-15T10:30:00.000Z
+
+📊 Results: 4 passed, 0 failed
+
+==================================================
+
+📊 Final Results:
+   ✅ Passed: 6
+   ❌ Failed: 0
+   📈 Success Rate: 100.0%
+

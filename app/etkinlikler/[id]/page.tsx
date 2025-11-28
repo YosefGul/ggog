@@ -10,6 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Clock, FileText, ExternalLink, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
+import StructuredData from "@/components/seo/StructuredData";
+import { generateEventSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
 
 interface EventImage {
   id: string;
@@ -66,11 +70,42 @@ export default function EventDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Yükleniyor...</p>
+      <div className="min-h-screen bg-muted/30">
+        <div className="bg-white border-b">
+          <div className="container mx-auto px-4 py-6 md:py-8">
+            <div className="max-w-7xl mx-auto">
+              <Skeleton className="h-10 w-32 mb-4" />
+              <Skeleton className="h-12 w-3/4 mb-4" />
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 py-6 md:py-12">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+              <div className="lg:col-span-2 space-y-6">
+                <Skeleton className="h-96 w-full rounded-lg" />
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-48" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-full mb-2" />
+                    <Skeleton className="h-4 w-3/4" />
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-10 w-full" />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -110,22 +145,41 @@ export default function EventDetailPage() {
     event.applicationDeadline &&
     new Date(event.applicationDeadline) < new Date();
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Etkinlikler", href: "/etkinlikler" },
+    { label: event.title, href: `/etkinlikler/${id}` },
+  ];
+
+  const eventSchema = generateEventSchema({
+    name: event.title,
+    description: event.description.substring(0, 200),
+    startDate: event.eventDate || new Date().toISOString(),
+    location: event.location ? {
+      name: event.location,
+    } : undefined,
+    image: event.images.length > 0 ? event.images[0].imageUrl : undefined,
+    organizer: {
+      name: "GGOG - Genç Girişimciler ve Oyun Geliştiricileri Derneği",
+      url: process.env.NEXTAUTH_URL || "http://localhost:3000",
+    },
+    url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/etkinlikler/${id}`,
+  });
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Ana Sayfa", url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}` },
+    { name: "Etkinlikler", url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/etkinlikler` },
+    { name: event.title, url: `${process.env.NEXTAUTH_URL || "http://localhost:3000"}/etkinlikler/${id}` },
+  ]);
+
   return (
-    <div className="min-h-screen bg-muted/30">
+    <>
+      <StructuredData data={[eventSchema, breadcrumbSchema]} />
+      <div className="min-h-screen bg-muted/30">
       {/* Header Section */}
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-6 md:py-8">
           <div className="max-w-7xl mx-auto">
-            <Button
-              asChild
-              variant="ghost"
-              className="mb-4 md:mb-6"
-            >
-              <Link href="/etkinlikler">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Etkinliklere Dön
-              </Link>
-            </Button>
+            <Breadcrumb items={breadcrumbItems} className="mb-4 md:mb-6" />
 
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-4">
               {event.category && (
@@ -413,6 +467,7 @@ export default function EventDetailPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

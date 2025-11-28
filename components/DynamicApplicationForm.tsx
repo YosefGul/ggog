@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
+import { useToast } from "@/lib/toast";
 
 interface FormField {
   id: string;
@@ -38,7 +39,7 @@ export default function DynamicApplicationForm({
   const [fields, setFields] = useState<FormField[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { toast } = useToast();
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm();
 
   useEffect(() => {
@@ -64,11 +65,14 @@ export default function DynamicApplicationForm({
 
   const onSubmit = async (data: any) => {
     setSubmitting(true);
-    setMessage(null);
 
     try {
       if (!eventId) {
-        setMessage({ type: "error", text: "Etkinlik ID bulunamadı" });
+        toast({
+          variant: "destructive",
+          title: "Hata",
+          description: "Etkinlik ID bulunamadı",
+        });
         setSubmitting(false);
         return;
       }
@@ -84,17 +88,29 @@ export default function DynamicApplicationForm({
       const responseData = await response.json();
 
       if (response.ok) {
-        setMessage({ type: "success", text: responseData.message || "Başvurunuz başarıyla gönderildi!" });
+        toast({
+          variant: "success",
+          title: "Başarılı",
+          description: responseData.message || "Başvurunuz başarıyla gönderildi!",
+        });
         // Form'u temizle
         Object.keys(data).forEach((key) => {
           setValue(key, "");
         });
       } else {
-        setMessage({ type: "error", text: responseData.error || "Bir hata oluştu" });
+        toast({
+          variant: "destructive",
+          title: "Hata",
+          description: responseData.error || "Bir hata oluştu",
+        });
       }
     } catch (error) {
       console.error("Error submitting application:", error);
-      setMessage({ type: "error", text: "Bağlantı hatası. Lütfen tekrar deneyin." });
+      toast({
+        variant: "destructive",
+        title: "Hata",
+        description: "Bağlantı hatası. Lütfen tekrar deneyin.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -191,18 +207,6 @@ export default function DynamicApplicationForm({
             )}
           </div>
         ))}
-
-        {message && (
-          <div
-            className={`p-4 rounded-md ${
-              message.type === "success"
-                ? "bg-green-50 text-green-800 border border-green-200"
-                : "bg-destructive/10 text-destructive border border-destructive/20"
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         <Button
           type="submit"

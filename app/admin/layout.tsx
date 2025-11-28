@@ -32,8 +32,7 @@ export default async function AdminLayout({
   }
 
   // Permission kontrolü
-  const userRole = (user as any).role || "VIEWER";
-  if (!canAccessPage(userRole, pathname)) {
+  if (!canAccessPage(user.role, pathname)) {
     redirect("/admin/forbidden");
   }
 

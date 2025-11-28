@@ -291,7 +291,7 @@ function AdminLogsPageContent() {
               </CardDescription>
             </div>
             <Button
-              className="w-full md:w-auto"
+              className="w-full md:w-auto bg-green-600 hover:bg-green-700"
               onClick={async () => {
                 try {
                   const params = new URLSearchParams({
@@ -326,7 +326,6 @@ function AdminLogsPageContent() {
                   alert("Export işlemi sırasında bir hata oluştu");
                 }
               }}
-              className="bg-green-600 hover:bg-green-700"
             >
               📥 Excel'e Aktar
             </Button>

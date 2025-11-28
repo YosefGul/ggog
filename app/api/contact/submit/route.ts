@@ -1,36 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { contactFormSchema, validateRequestBody } from "@/lib/validation";
+import { withErrorHandling } from "@/lib/error-handler";
+import { rateLimit } from "@/lib/rate-limit";
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { name, email, subject, message } = body;
+const contactRateLimit = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  maxRequests: 5, // 5 submissions per minute
+});
 
-    if (!name || !email || !message) {
-      return NextResponse.json(
-        { error: "Tüm alanları doldurunuz" },
-        { status: 400 }
-      );
-    }
-
-    await prisma.contactFormSubmission.create({
-      data: {
-        name,
-        email,
-        subject: subject || null,
-        message,
-      },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error submitting contact form:", error);
-    return NextResponse.json(
-      { error: "Form gönderimi başarısız" },
-      { status: 500 }
-    );
+export const POST = withErrorHandling(async (request: NextRequest) => {
+  // Rate limiting
+  const rateLimitResponse = await contactRateLimit(request);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
   }
-}
+
+  const body = await validateRequestBody(request, contactFormSchema);
+
+  await prisma.contactFormSubmission.create({
+    data: {
+      name: body.name,
+      email: body.email,
+      subject: body.subject || null,
+      message: body.message,
+    },
+  });
+
+  return NextResponse.json({ success: true });
+});
 
 
 

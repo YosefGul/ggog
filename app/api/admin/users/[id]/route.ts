@@ -1,186 +1,159 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
-import { Permission, hasPermission, isSuperAdmin } from "@/lib/permissions";
+import { Permission, isSuperAdmin } from "@/lib/permissions";
 import { logAdminAction, getClientIp, getUserAgent, getChanges } from "@/lib/admin-logger";
+import { updateUserSchema, validateRequestBody, idSchema } from "@/lib/validation";
+import { hashPassword } from "@/lib/password";
+import { withErrorHandling, NotFoundError, ForbiddenError, ValidationError, UnauthorizedError } from "@/lib/error-handler";
+import { checkPermission } from "@/lib/api-helpers";
 
-export async function GET(
+export const GET = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+) => {
+  await checkPermission(Permission.MANAGE_USERS);
 
-    const userRole = (user as any).role || "VIEWER";
-    if (!hasPermission(userRole, Permission.MANAGE_USERS)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+  const { id } = await params;
+  const parsedId = idSchema.parse({ id });
 
-    const { id } = await params;
-    const targetUser = await prisma.user.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+  const targetUser = await prisma.user.findUnique({
+    where: { id: parsedId.id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
 
-    if (!targetUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(targetUser);
-  } catch (error) {
-    console.error("Error fetching user:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch user" },
-      { status: 500 }
-    );
+  if (!targetUser) {
+    throw new NotFoundError("User not found");
   }
-}
 
-export async function PUT(
+  return NextResponse.json(targetUser);
+});
+
+export const PUT = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+) => {
+  await checkPermission(Permission.MANAGE_USERS);
 
-    const userRole = (user as any).role || "VIEWER";
-    if (!hasPermission(userRole, Permission.MANAGE_USERS)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { id } = await params;
-    const body = await request.json();
-    const { email, name, role, password } = body;
-
-    const targetUser = await prisma.user.findUnique({
-      where: { id },
-    });
-
-    if (!targetUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Only Super Admin can change roles to SUPER_ADMIN
-    if (role === "SUPER_ADMIN" && !isSuperAdmin(userRole)) {
-      return NextResponse.json(
-        { error: "Only Super Admin can assign Super Admin role" },
-        { status: 403 }
-      );
-    }
-
-    const updateData: any = {};
-    if (email !== undefined) updateData.email = email;
-    if (name !== undefined) updateData.name = name;
-    if (role !== undefined) updateData.role = role;
-    if (password !== undefined && password.trim() !== "") {
-      const bcrypt = require("bcryptjs");
-      updateData.password = await bcrypt.hash(password, 10);
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id },
-      data: updateData,
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    // Log admin action with changes
-    const changes = targetUser ? getChanges(targetUser, { ...targetUser, ...updateData }) : undefined;
-    await logAdminAction({
-      userId: (user as any).id,
-      action: "UPDATE",
-      entityType: "User",
-      entityId: updatedUser.id,
-      entityName: updatedUser.email,
-      changes,
-      ipAddress: getClientIp(request),
-      userAgent: getUserAgent(request),
-    });
-
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    console.error("Error updating user:", error);
-    return NextResponse.json(
-      { error: "Failed to update user" },
-      { status: 500 }
-    );
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("User not found");
   }
-}
 
-export async function DELETE(
+  const { id } = await params;
+  const parsedId = idSchema.parse({ id });
+  const body = await validateRequestBody(request, updateUserSchema);
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id: parsedId.id },
+  });
+
+  if (!targetUser) {
+    throw new NotFoundError("User not found");
+  }
+
+  // Only Super Admin can change roles to SUPER_ADMIN
+  if (body.role === "SUPER_ADMIN" && !isSuperAdmin(user.role)) {
+    throw new ForbiddenError("Only Super Admin can assign Super Admin role");
+  }
+
+  const updateData: {
+    email?: string;
+    name?: string | null;
+    role?: "SUPER_ADMIN" | "ADMIN" | "EDITOR" | "MODERATOR" | "VIEWER";
+    password?: string;
+  } = {};
+
+  if (body.email !== undefined) updateData.email = body.email;
+  if (body.name !== undefined) updateData.name = body.name || null;
+  if (body.role !== undefined) {
+    updateData.role = body.role as "SUPER_ADMIN" | "ADMIN" | "EDITOR" | "MODERATOR" | "VIEWER";
+  }
+  if (body.password !== undefined && body.password.trim() !== "") {
+    updateData.password = await hashPassword(body.password);
+  }
+
+  const updatedUser = await prisma.user.update({
+    where: { id: parsedId.id },
+    data: updateData,
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  // Log admin action with changes
+  const changes = targetUser ? getChanges(targetUser, { ...targetUser, ...updateData }) : undefined;
+  await logAdminAction({
+    userId: user.id,
+    action: "UPDATE",
+    entityType: "User",
+    entityId: updatedUser.id,
+    entityName: updatedUser.email,
+    changes,
+    ipAddress: getClientIp(request),
+    userAgent: getUserAgent(request),
+  });
+
+  return NextResponse.json(updatedUser);
+});
+
+export const DELETE = withErrorHandling(async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const userRole = (user as any).role || "VIEWER";
-    // Only Super Admin can delete users
-    if (!isSuperAdmin(userRole)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const { id } = await params;
-    const targetUser = await prisma.user.findUnique({
-      where: { id },
-    });
-
-    if (!targetUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    // Prevent self-deletion
-    if (targetUser.id === (user as any).id) {
-      return NextResponse.json(
-        { error: "Cannot delete your own account" },
-        { status: 400 }
-      );
-    }
-
-    await prisma.user.delete({
-      where: { id },
-    });
-
-    // Log admin action
-    await logAdminAction({
-      userId: (user as any).id,
-      action: "DELETE",
-      entityType: "User",
-      entityId: targetUser.id,
-      entityName: targetUser.email,
-      ipAddress: getClientIp(request),
-      userAgent: getUserAgent(request),
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting user:", error);
-    return NextResponse.json(
-      { error: "Failed to delete user" },
-      { status: 500 }
-    );
+) => {
+  const user = await getCurrentUser();
+  if (!user) {
+    throw new Error("User not found");
   }
-}
+
+  // Only Super Admin can delete users
+  if (!isSuperAdmin(user.role)) {
+    throw new ForbiddenError("Only Super Admin can delete users");
+  }
+
+  const { id } = await params;
+  const parsedId = idSchema.parse({ id });
+
+  const targetUser = await prisma.user.findUnique({
+    where: { id: parsedId.id },
+  });
+
+  if (!targetUser) {
+    throw new NotFoundError("User not found");
+  }
+
+  // Prevent self-deletion
+  if (targetUser.id === user.id) {
+    throw new ValidationError("Cannot delete your own account");
+  }
+
+  await prisma.user.delete({
+    where: { id: parsedId.id },
+  });
+
+  // Log admin action
+  await logAdminAction({
+    userId: user.id,
+    action: "DELETE",
+    entityType: "User",
+    entityId: targetUser.id,
+    entityName: targetUser.email,
+    ipAddress: getClientIp(request),
+    userAgent: getUserAgent(request),
+  });
+
+  return NextResponse.json({ success: true });
+});
 

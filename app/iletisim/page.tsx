@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Phone, Mail, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { useToast } from "@/lib/toast";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
 
 interface ContactSettings {
   address?: string;
@@ -33,7 +35,7 @@ export default function ContactPage() {
     message: "",
   });
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchSettings();
@@ -57,7 +59,6 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    setMessage(null);
 
     try {
       const response = await fetch("/api/contact/submit", {
@@ -69,21 +70,38 @@ export default function ContactPage() {
       });
 
       if (response.ok) {
-        setMessage({ type: "success", text: "Mesajınız başarıyla gönderildi!" });
+        toast({
+          variant: "success",
+          title: "Başarılı",
+          description: "Mesajınız başarıyla gönderildi!",
+        });
         setFormData({ name: "", email: "", subject: "", message: "" });
       } else {
-        setMessage({ type: "error", text: "Mesaj gönderimi başarısız" });
+        toast({
+          variant: "destructive",
+          title: "Hata",
+          description: "Mesaj gönderimi başarısız",
+        });
       }
     } catch (error) {
-      setMessage({ type: "error", text: "Bir hata oluştu" });
+      toast({
+        variant: "destructive",
+        title: "Hata",
+        description: "Bir hata oluştu",
+      });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "İletişim", href: "/iletisim" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={breadcrumbItems} className="mb-8" />
         <AnimateOnScroll>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">İletişim</h1>
@@ -291,17 +309,6 @@ export default function ContactPage() {
                       placeholder="Mesajınızı buraya yazabilirsiniz..."
                     />
                   </div>
-                  {message && (
-                    <div
-                      className={`p-4 rounded-md ${
-                        message.type === "success"
-                          ? "bg-green-50 text-green-800 border border-green-200"
-                          : "bg-destructive/10 text-destructive border border-destructive/20"
-                      }`}
-                    >
-                      {message.text}
-                    </div>
-                  )}
                   <Button
                     type="submit"
                     disabled={submitting}

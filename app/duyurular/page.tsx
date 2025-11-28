@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import RichTextRenderer from "@/components/RichTextRenderer";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { SkeletonList } from "@/components/ui/skeleton-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
 
 interface Announcement {
   id: string;
@@ -43,16 +46,25 @@ export default function AnnouncementsPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Yükleniyor...</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8">
+            <Skeleton className="h-10 w-48 mb-4" />
+            <Skeleton className="h-6 w-96" />
+          </div>
+          <SkeletonList count={6} />
         </div>
       </div>
     );
   }
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Duyurular", href: "/duyurular" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={breadcrumbItems} className="mb-8" />
         <AnimateOnScroll>
           <h1 className="text-4xl font-bold mb-4">Duyurular</h1>
           <p className="text-muted-foreground mb-8">
@@ -75,10 +87,12 @@ export default function AnnouncementsPage() {
               <Card key={announcement.id} className="flex flex-col hover:shadow-lg transition-shadow">
                 {announcement.image && (
                   <div className="relative h-48 w-full">
-                    <img
+                    <Image
                       src={announcement.image}
                       alt={announcement.title}
-                      className="w-full h-full object-cover rounded-t-lg"
+                      fill
+                      className="object-cover rounded-t-lg"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
                 )}

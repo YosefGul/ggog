@@ -1,8 +1,22 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { verifyPassword } from "@/lib/password";
 import { logAdminAction } from "@/lib/admin-logger";
+import { ExtendedUser, ExtendedJWT } from "@/types/auth";
+import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
+
+declare module "next-auth" {
+  interface Session {
+    user: ExtendedUser;
+  }
+  interface User extends ExtendedUser {}
+}
+
+declare module "next-auth/jwt" {
+  interface JWT extends ExtendedJWT {}
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -25,7 +39,7 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const isPasswordValid = await bcrypt.compare(
+        const isPasswordValid = await verifyPassword(
           credentials.password,
           user.password
         );
@@ -53,14 +67,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = (user as any).role;
+        token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
       }
       return token;
     },
     async session({ session, token }) {
-      if (session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).role = token.role;
+      if (session.user && token) {
+        (session.user as ExtendedUser).id = token.id;
+        (session.user as ExtendedUser).role = token.role;
       }
       return session;
     },
@@ -73,11 +89,11 @@ export const authOptions: NextAuthOptions = {
             action: "LOGIN",
             entityType: "User",
             entityId: user.id,
-            entityName: (user as any).email || "User",
+            entityName: user.email || "User",
           });
         } catch (error) {
           // Don't fail login if logging fails
-          console.error("Failed to log login:", error);
+          logger.error("Failed to log login", { error });
         }
       }
       return true;
@@ -89,20 +105,20 @@ export const authOptions: NextAuthOptions = {
       if (token && token.id) {
         try {
           await logAdminAction({
-            userId: token.id as string,
+            userId: token.id,
             action: "LOGOUT",
             entityType: "User",
-            entityId: token.id as string,
-            entityName: (token.email as string) || "User",
+            entityId: token.id,
+            entityName: token.email || "User",
           });
         } catch (error) {
           // Don't fail logout if logging fails
-          console.error("Failed to log logout:", error);
+          logger.error("Failed to log logout", { error });
         }
       }
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET,
 };
 
 const handler = NextAuth(authOptions);

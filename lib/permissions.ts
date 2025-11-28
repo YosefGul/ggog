@@ -20,6 +20,7 @@ export enum Permission {
   MANAGE_ORGAN_MEMBERS = "MANAGE_ORGAN_MEMBERS",
   MANAGE_SETTINGS = "MANAGE_SETTINGS",
   MANAGE_USERS = "MANAGE_USERS",
+  MANAGE_NEWSLETTER = "MANAGE_NEWSLETTER",
 }
 
 export type UserRole = "SUPER_ADMIN" | "ADMIN" | "EDITOR" | "MODERATOR" | "VIEWER";
@@ -42,6 +43,7 @@ const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     Permission.MANAGE_ORGAN_MEMBERS,
     Permission.MANAGE_SETTINGS,
     Permission.MANAGE_USERS,
+    Permission.MANAGE_NEWSLETTER,
   ],
   ADMIN: [
     // All permissions except user management (or limited)
@@ -102,6 +104,8 @@ const PAGE_PERMISSIONS: Record<string, Permission> = {
   "/admin/users": Permission.MANAGE_USERS,
   "/admin/analytics": Permission.VIEW_DASHBOARD,
   "/admin/logs": Permission.MANAGE_USERS,
+  "/admin/newsletter": Permission.MANAGE_NEWSLETTER,
+  "/admin/member-form-fields": Permission.MANAGE_FORM_FIELDS,
 };
 
 /**

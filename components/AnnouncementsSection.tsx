@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import RichTextRenderer from "./RichTextRenderer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,10 +83,12 @@ export default function AnnouncementsSection() {
                 <Card key={announcement.id} className="flex flex-col h-[420px]">
                   {announcement.image && (
                     <div className="relative h-48 w-full overflow-hidden rounded-t-lg">
-                      <img
+                      <Image
                         src={announcement.image}
                         alt={announcement.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 50vw"
                       />
                     </div>
                   )}

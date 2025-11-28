@@ -24,6 +24,9 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   adminLogs     AdminLog[]
+
+  @@index([role])
+  @@index([createdAt])
 }
 
 model Slider {
@@ -38,6 +41,10 @@ model Slider {
   order       Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+  @@index([createdAt])
 }
 
 model Partner {
@@ -48,6 +55,10 @@ model Partner {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+  @@index([createdAt])
 }
 
 model AboutStats {
@@ -92,6 +103,13 @@ model Event {
   updatedAt           DateTime         @updatedAt
   images              EventImage[]
   applications        EventApplication[]
+
+  @@index([categoryId])
+  @@index([isPastEvent])
+  @@index([showOnHomepage])
+  @@index([eventDate])
+  @@index([createdAt])
+  @@index([acceptsApplications])
 }
 
 model EventImage {
@@ -107,7 +125,8 @@ model FormField {
   id            String         @id @default(cuid())
   eventCategoryId String?
   eventCategory   EventCategory? @relation(fields: [eventCategoryId], references: [id], onDelete: Cascade)
-  fieldType     String         // text, email, number, date, select, checkbox, textarea
+  isMemberForm Boolean        @default(false) // true if this field is for member application form
+  fieldType     String         // text, email, number, date, select, checkbox, textarea, url
   label         String
   placeholder   String?
   isRequired    Boolean        @default(false)
@@ -116,6 +135,9 @@ model FormField {
   order         Int            @default(0)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  @@index([isMemberForm])
+  @@index([eventCategoryId])
 }
 
 model EventApplication {
@@ -126,6 +148,10 @@ model EventApplication {
   status    String   @default("pending") // pending, approved, rejected
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Announcement {
@@ -140,6 +166,11 @@ model Announcement {
   publishedAt DateTime @default(now())
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([order])
+  @@index([publishedAt])
+  @@index([createdAt])
 }
 
 model Settings {
@@ -193,6 +224,10 @@ model MemberApplication {
   status            String   @default("pending") // pending, approved, rejected
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model OrganCategory {
@@ -204,6 +239,9 @@ model OrganCategory {
   members     OrganMember[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@index([isActive])
+  @@index([order])
 }
 
 model OrganMember {
@@ -219,6 +257,10 @@ model OrganMember {
   isActive    Boolean       @default(true)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([isActive])
+  @@index([order])
 }
 
 model AdminLog {

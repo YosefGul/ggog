@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin } from "lucide-react";
 import AnimateOnScroll from "@/components/AnimateOnScroll";
+import { SkeletonList } from "@/components/ui/skeleton-card";
+import { Skeleton } from "@/components/ui/skeleton";
+import Breadcrumb, { BreadcrumbItem } from "@/components/ui/breadcrumb";
 
 interface Category {
   id: string;
@@ -79,16 +83,25 @@ export default function EventsPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Yükleniyor...</p>
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <Skeleton className="h-10 w-64 mx-auto mb-4" />
+            <Skeleton className="h-6 w-96 mx-auto" />
+          </div>
+          <SkeletonList count={6} />
         </div>
       </div>
     );
   }
 
+  const breadcrumbItems: BreadcrumbItem[] = [
+    { label: "Etkinlikler", href: "/etkinlikler" },
+  ];
+
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={breadcrumbItems} className="mb-8" />
         <AnimateOnScroll>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">Etkinliklerimiz</h1>
@@ -140,10 +153,12 @@ export default function EventsPage() {
                   <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col group">
                     {event.images.length > 0 && (
                       <div className="relative h-48 overflow-hidden">
-                        <img
+                        <Image
                           src={event.images[0].imageUrl}
                           alt={event.title}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
                         {event.acceptsApplications && !event.isPastEvent && (
                           <Badge className="absolute top-4 right-4 bg-green-500">
